@@ -120,8 +120,8 @@ if __name__ == "__main__":
     print("[info] 準備ができたらいずれかのキーを押してください")
     input()
     print("[info] ログの監視を開始します")
-
     print("[info] IP :", ip, "PORT :", port)
+    print("[info] OSCの送信を開始します\n")
 
     client = SimpleUDPClient(ip, port)
 
@@ -144,6 +144,7 @@ if __name__ == "__main__":
             if len(player_str) == 1:
                 first = player_str[-1] # 一の位
                 client.send_message("/avatar/parameter/*", int(first))
+                client.send_message("/avatar/parameter/**", 0)
             else:
                 first = player_str[-1] # 一の位
                 second = player_str[-2] # 十の位
