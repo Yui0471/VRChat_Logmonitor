@@ -10,7 +10,7 @@ moni = """
 ############################################
 #                                          #
 #   VRChat Log Monitor                     #
-#                  Version Alpha 1.1.0     #
+#                  Version Alpha 1.1.1     #
 #                                          #
 #   Author : Yui-Kazeniwa                  #
 #                                          #
@@ -57,7 +57,7 @@ def directory_move():
 # txtを読み込み専用で開きデータを行ごとにリスト化する
 def txt_open(path):
     f = open(path, "r", encoding="utf-8")
-    data = f.read().split("\n")
+    data = f.read().readlines()
 
     txtdata = []
     for s in data:
