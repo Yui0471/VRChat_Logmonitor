@@ -4,12 +4,13 @@ import os
 import sys
 import time
 import glob
+from pythonosc.udp_client import SimpleUDPClient
 
 moni = """
 ############################################
 #                                          #
 #   VRChat Log Monitor                     #
-#                  Version Alpha 1.0.0     #
+#                  Version Alpha 1.1.0     #
 #                                          #
 #   Author : Yui-Kazeniwa                  #
 #                                          #
@@ -18,6 +19,9 @@ moni = """
 [info] 現在のワールド、インスタンス人数をログから取得します
 [!Warning!] VRChatを起動してから本スクリプトを実行してください
 """
+
+ip = "127.0.0.1"
+port = 9000
 
 # 最新のログファイルを取得
 def logfile_detection(directory_path):
@@ -115,7 +119,11 @@ if __name__ == "__main__":
     print(moni)
     print("[info] 準備ができたらいずれかのキーを押してください")
     input()
-    print("[info] ログの監視を開始します\n")
+    print("[info] ログの監視を開始します")
+
+    print("[info] IP :", ip, "PORT :", port)
+
+    client = SimpleUDPClient(ip, port)
 
     filepath = logfile_detection(directory_move())
     player_list = []
@@ -126,7 +134,22 @@ if __name__ == "__main__":
             world = current_world(logdata)
 
             player_list = player_count(logdata, world[0])
-            print("\r", "[info] 現在のワールド", world[1], ": 現在のインスタンス人数", len(player_list), "人", end="")
+            player = len(player_list)
+
+            print("\r", "[info] 現在のワールド", world[1], ": 現在のインスタンス人数", player, "人", end="")
+
+            player_str = str(player)
+
+            # 恐らく3桁になることはないはず……。
+            if len(player_str) == 1:
+                first = player_str[-1] # 一の位
+                client.send_message("/avatar/parameter/*", int(first))
+            else:
+                first = player_str[-1] # 一の位
+                second = player_str[-2] # 十の位
+                client.send_message("/avatar/parameter/*", int(first))
+                client.send_message("/avatar/parameter/**", int(second))
+
             time.sleep(1)
 
     except Exception as e:
