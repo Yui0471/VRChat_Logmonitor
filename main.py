@@ -10,7 +10,7 @@ moni = """
 ######################################
 #                                    #
 #   VRChat Log Monitor               #
-#                  Version 2.0.0     #
+#                  Version 2.0.1     #
 #                                    #
 #   Author : Yui-Kazeniwa            #
 #                                    #
@@ -141,7 +141,15 @@ def time_comparison(worldname):
     minute = (diff % 3600) // 60
     second = diff % 60
 
-    return hour, minute, second
+    print_stay_time = ""
+    if stay_time[0] != 0:
+        print_stay_time += str(hour) + "時間"
+    if stay_time[1] != 0:
+        print_stay_time += str(minute) + "分"
+    if stay_time[2] != 0:
+        print_stay_time += str(second) + "秒"
+
+    return print_stay_time
     
 
 if __name__ == "__main__":
@@ -172,15 +180,8 @@ if __name__ == "__main__":
         player = len(player_list)
 
         stay_time = time_comparison(world[1])
-        print_stay_time = ""
-        if stay_time[0] != 0:
-            print_stay_time += str(stay_time[0]) + "時間"
-        if stay_time[1] != 0:
-            print_stay_time += str(stay_time[1]) + "分"
-        if stay_time[2] != 0:
-            print_stay_time += str(stay_time[2]) + "秒"
 
-        print("\r[info]",world[1], "| 人数 :", player, "人 | 滞在時間 :", print_stay_time, end="")
+        print("\r[info]",world[1], "| 人数 :", player, "人 | 滞在時間 :", stay_time, end="")
 
         player_str = str(player)
 
