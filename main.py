@@ -10,7 +10,7 @@ moni = """
 ######################################
 #                                    #
 #   VRChat Log Monitor               #
-#                  Version 2.0.1     #
+#                  Version 2.0.2     #
 #                                    #
 #   Author : Yui-Kazeniwa            #
 #                                    #
@@ -131,7 +131,7 @@ def player_count(data, world_count): # list, int, list
 def time_comparison(worldname, worldpeople):
     now_time = int(time.time()) # 現在時刻
 
-    if world_time_com[0] != worldname or worldpeople == 0: # もし記録していたワールド名が現在のワールドと違っていたら書き換える
+    if world_time_com[0] != worldname or worldpeople == 0: # もし記録していたワールド名が現在のワールドと違っているか、インスタンス人数が0になったら書き換える
         world_time_com[0] = worldname
         world_time_com[1] = now_time
 
