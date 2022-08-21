@@ -10,7 +10,7 @@ moni = """
 ######################################
 #                                    #
 #   VRChat Log Monitor               #
-#                  Version 1.2.2     #
+#                  Version 2.0.0     #
 #                                    #
 #   Author : Yui-Kazeniwa            #
 #                                    #
@@ -127,13 +127,22 @@ def player_count(data, world_count): # list, int, list
     # プレイヤーがインスタンスからLeftする
 
 
-#def time_comparison(worldname):
-    #if world_time_com != worldname:
+# 現在のワールド名を基にインスタンスの滞在時間を計算
+def time_comparison(worldname):
+    now_time = int(time.time()) # 現在時刻
 
+    if world_time_com[0] != worldname: # もし記録していたワールド名が現在のワールドと違っていたら書き換える
+        world_time_com[0] = worldname
+        world_time_com[1] = now_time
 
+    diff = now_time - world_time_com[1] # 差分
 
+    hour = (diff % (3600 * 24)) // 3600 # 時間計算
+    minute = (diff % 3600) // 60
+    second = diff % 60
+
+    return hour, minute, second
     
-
 
 if __name__ == "__main__":
     print(moni)
@@ -149,7 +158,7 @@ if __name__ == "__main__":
 
     filepath = logfile_detection(directory_move())
     player_list = []
-    world_time_com = ""
+    world_time_com = ["", 0]
 
     while True:
         logdata = txt_open(filepath)
@@ -162,7 +171,16 @@ if __name__ == "__main__":
         player_list = player_count(logdata, world[0])
         player = len(player_list)
 
-        print("\r", "[info] 現在のワールド :", world[1], ": 現在のインスタンス人数", player, "人", end="")
+        stay_time = time_comparison(world[1])
+        print_stay_time = ""
+        if stay_time[0] != 0:
+            print_stay_time += str(stay_time[0]) + "時間"
+        if stay_time[1] != 0:
+            print_stay_time += str(stay_time[1]) + "分"
+        if stay_time[2] != 0:
+            print_stay_time += str(stay_time[2]) + "秒"
+
+        print("\r[info]",world[1], "| 人数 :", player, "人 | 滞在時間 :", print_stay_time, end="")
 
         player_str = str(player)
 
