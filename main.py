@@ -128,10 +128,10 @@ def player_count(data, world_count): # list, int, list
 
 
 # 現在のワールド名を基にインスタンスの滞在時間を計算
-def time_comparison(worldname):
+def time_comparison(worldname, worldpeople):
     now_time = int(time.time()) # 現在時刻
 
-    if world_time_com[0] != worldname: # もし記録していたワールド名が現在のワールドと違っていたら書き換える
+    if world_time_com[0] != worldname or worldpeople == 0: # もし記録していたワールド名が現在のワールドと違っていたら書き換える
         world_time_com[0] = worldname
         world_time_com[1] = now_time
 
@@ -142,11 +142,11 @@ def time_comparison(worldname):
     second = diff % 60
 
     print_stay_time = ""
-    if stay_time[0] != 0:
+    if hour != 0:
         print_stay_time += str(hour) + "時間"
-    if stay_time[1] != 0:
+    if minute != 0:
         print_stay_time += str(minute) + "分"
-    if stay_time[2] != 0:
+    if second != 0:
         print_stay_time += str(second) + "秒"
 
     return print_stay_time
@@ -179,7 +179,7 @@ if __name__ == "__main__":
         player_list = player_count(logdata, world[0])
         player = len(player_list)
 
-        stay_time = time_comparison(world[1])
+        stay_time = time_comparison(world[1], player)
 
         print("\r[info]",world[1], "| 人数 :", player, "人 | 滞在時間 :", stay_time, end="")
 
