@@ -1,4 +1,4 @@
-# VRChat Chatbox Template System
+# VRChat Log to OSC
 
 VRChat起動中のログを見てリアルタイムのインスタンス人数とインスタンス滞在時間をOSCでVRChatに送るツール。
 
