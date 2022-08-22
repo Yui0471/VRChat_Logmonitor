@@ -10,7 +10,7 @@ moni = """
 ######################################
 #                                    #
 #   VRChat Log Monitor               #
-#                  Version 2.0.2     #
+#                  Version 3.0.1     #
 #                                    #
 #   Author : Yui-Kazeniwa            #
 #                                    #
@@ -22,6 +22,110 @@ moni = """
 
 ip = "127.0.0.1"
 port = 9000
+
+param_dict_first = {
+    0:1,
+    1:2,
+    2:3,
+    3:4,
+    4:5,
+    5:6,
+    6:7,
+    7:8,
+    8:9,
+    9:10
+}
+
+param_dict_second = {
+    0:11,
+    1:12,
+    2:13,
+    3:14,
+    4:15,
+    5:16,
+    6:17,
+    7:18,
+    8:19,
+    9:20
+}
+
+param_dict_third = {
+    0:21,
+    1:22,
+    2:23,
+    3:24,
+    4:25,
+    5:26,
+    6:27,
+    7:28,
+    8:29,
+    9:30
+}
+
+param_dict_fourth = {
+    0:31,
+    1:32,
+    2:33,
+    3:34,
+    4:35,
+    5:36,
+    6:37,
+    7:38,
+    8:39,
+    9:40
+}
+
+param_dict_fifth = {
+    0:41,
+    1:42,
+    2:43,
+    3:44,
+    4:45,
+    5:46,
+    6:47,
+    7:48,
+    8:49,
+    9:50
+}
+
+param_dict_sixth = {
+    0:51,
+    1:52,
+    2:53,
+    3:54,
+    4:55,
+    5:56,
+    6:57,
+    7:58,
+    8:59,
+    9:60
+}
+
+param_dict_seventh = {
+    0:61,
+    1:62,
+    2:63,
+    3:64,
+    4:65,
+    5:66,
+    6:67,
+    7:68,
+    8:69,
+    9:70
+}
+
+param_dict_eighth = {
+    0:71,
+    1:72,
+    2:73,
+    3:74,
+    4:75,
+    5:76,
+    6:77,
+    7:78,
+    8:79,
+    9:80
+}
 
 # 最新のログファイルを取得
 def logfile_detection(directory_path):
@@ -149,18 +253,48 @@ def time_comparison(worldname, worldpeople):
     if second != 0:
         print_stay_time += str(second) + "秒"
 
+    if len(str(hour)) == 1:
+        client.send_message("/avatar/parameters/Log_Monitor", param_dict_third[0])
+        time.sleep(0.3)
+        client.send_message("/avatar/parameters/Log_Monitor", param_dict_fourth[hour])
+        time.sleep(0.3)
+    else:
+        client.send_message("/avatar/parameters/Log_Monitor", param_dict_third[(hour//10)%10])
+        time.sleep(0.3)
+        client.send_message("/avatar/parameters/Log_Monitor", param_dict_fourth[hour%10])
+        time.sleep(0.3)
+    if len(str(minute)) == 1:
+        client.send_message("/avatar/parameters/Log_Monitor", param_dict_fifth[0])
+        time.sleep(0.3)
+        client.send_message("/avatar/parameters/Log_Monitor", param_dict_sixth[minute])
+        time.sleep(0.3)
+    else:
+        client.send_message("/avatar/parameters/Log_Monitor", param_dict_fifth[(minute//10)%10])
+        time.sleep(0.3)
+        client.send_message("/avatar/parameters/Log_Monitor", param_dict_sixth[minute%10])
+        time.sleep(0.3)
+    if len(str(second)) == 1:
+        client.send_message("/avatar/parameters/Log_Monitor", param_dict_seventh[0])
+        time.sleep(0.3)
+        client.send_message("/avatar/parameters/Log_Monitor", param_dict_eighth[second])
+        time.sleep(0.3)
+    else:
+        client.send_message("/avatar/parameters/Log_Monitor", param_dict_seventh[(second//10)%10])
+        time.sleep(0.3)
+        client.send_message("/avatar/parameters/Log_Monitor", param_dict_eighth[second%10])
+        time.sleep(0.3)
+
+
     return print_stay_time
     
 
 if __name__ == "__main__":
     print(moni)
-    print("[info] 準備ができたらいずれかのキーを押してください")
+    print("[info] 準備ができたらEnterを押してください")
     input()
     print("[info] ログの監視を開始します")
     print("[info] IP :", ip, "PORT :", port)
     print("[info] OSC送信を開始します")
-
-    #print("[Warning!] テスト版のためOSC機能は無効化されています")
 
     client = SimpleUDPClient(ip, port)
 
@@ -181,19 +315,21 @@ if __name__ == "__main__":
 
         stay_time = time_comparison(world[1], player)
 
-        print("\r[info]",world[1], "| 人数 :", player, "人 | 滞在時間 :", stay_time, end="")
+        print("\r[info]",world[1], "| 人数 :", player, "人 | 滞在時間 :",stay_time, end="")
 
         player_str = str(player)
 
         # 恐らく3桁になることはないはず……。
         if len(player_str) == 1:
             first = player_str[-1] # 一の位
-            client.send_message("/avatar/parameters/DD_op", int(first))
-            client.send_message("/avatar/parameters/DD_tp", 0)
+            client.send_message("/avatar/parameters/Log_Monitor", param_dict_second[int(first)])
+            time.sleep(0.3)
+            client.send_message("/avatar/parameters/Log_Monitor", param_dict_first[0])
         else:
             first = player_str[-1] # 一の位
             second = player_str[-2] # 十の位
-            client.send_message("/avatar/parameters/DD_op", int(first))
-            client.send_message("/avatar/parameters/DD_tp", int(second))
+            client.send_message("/avatar/parameters/Log_Monitor", param_dict_second[int(first)])
+            time.sleep(0.3)
+            client.send_message("/avatar/parameters/Log_Monitor", param_dict_first[int(second)])
 
-        time.sleep(1)
+        time.sleep(0.3)
