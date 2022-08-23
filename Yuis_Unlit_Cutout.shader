@@ -1,4 +1,5 @@
 // Unity built-in shader modification. by Yui-Kazeniwa
+// MIT License. 2022/08/23
 
 // Unlit alpha-cutout shader.
 // - no lighting
