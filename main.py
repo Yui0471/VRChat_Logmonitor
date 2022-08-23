@@ -322,14 +322,14 @@ if __name__ == "__main__":
         # 恐らく3桁になることはないはず……。
         if len(player_str) == 1:
             first = player_str[-1] # 一の位
-            client.send_message("/avatar/parameters/Log_Monitor", param_dict_second[int(first)])
-            time.sleep(0.3)
             client.send_message("/avatar/parameters/Log_Monitor", param_dict_first[0])
+            time.sleep(0.3)
+            client.send_message("/avatar/parameters/Log_Monitor", param_dict_second[int(first)])
         else:
             first = player_str[-1] # 一の位
             second = player_str[-2] # 十の位
-            client.send_message("/avatar/parameters/Log_Monitor", param_dict_second[int(first)])
-            time.sleep(0.3)
             client.send_message("/avatar/parameters/Log_Monitor", param_dict_first[int(second)])
+            time.sleep(0.3)
+            client.send_message("/avatar/parameters/Log_Monitor", param_dict_second[int(first)])
 
         time.sleep(0.3)
