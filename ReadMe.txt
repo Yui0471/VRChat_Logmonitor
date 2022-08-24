@@ -92,12 +92,12 @@ OSCでVRChatに送ることでアバターに現在のインスタンス人数�
 7.アバターのNeckボーンを右クリックして空オブジェクトをHeadと同じ階層に作ります。
   ここでは名前を適当に[FakeHead]とします。
 
-8.[FakeHead]にParent Constraintを設定します。SourcesにHeadを入れてZeroで初期化します。
+8.[FakeHead]にParent Constraintを設定します。SourcesにHeadを入れてZeroボタンを押して初期化します。
 
 9.[Log_Monitor]オブジェクトの下に[Log_Monitor_Constraint]オブジェクトがあります。
   これをドラッグアンドドロップでFakeHeadに移動させます。
 
-10.[Log_Monitor]オブジェクトにParent Constraintが設定されていますので、Zeroを押して初期化します。
+10.[Log_Monitor]オブジェクトにParent Constraintが設定されていますので、Zeroボタンを押して初期化します。
 
 11.[Animator_Layer_Sample]ファイルを参照し、その中にあるパラメータをアバターのFX Layerに作成します。
    - [Log_Monitor] int
@@ -140,7 +140,7 @@ OSCでVRChatに送ることでアバターに現在のインスタンス人数�
 -シェーダー同梱によりカメラやミラーに映らなくなりました
 
 〇2022/08/23 【Beta v1.2.0】
--シェーダーのRenderQueueを調整し、常に一番前に描画することでオブジェクトに阻まれなくなりました
+-シェーダーのRenderQueueを調整
 
 
 【開発環境】----------------------------
