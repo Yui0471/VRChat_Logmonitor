@@ -14,7 +14,7 @@ Shader "Yuis_Unlit_Transparent_Cutout" {
     }
 
     SubShader {
-        Tags {"Queue"="Geometry+6" "IgnoreProjector"="True"
+        Tags {"Queue"="Geometry+5" "IgnoreProjector"="True"
         "RenderType"="TransparentCutout"}
         ZTest Always
         LOD 100
