@@ -286,36 +286,37 @@ def filter_handler(address, *args):
         client.send_message("/avatar/parameters/Log_Monitor", i)
         time.sleep(0.3)
 
+def fileload():
+    global player_number
+    global world
+    global player_list
+
+    logdata = txt_open(filepath)
+    temp = current_world(logdata)
+
+    if temp is None: # 取得できないとNoneが返る
+        return
+
+    world = temp
+    player_list = player_count(logdata, world[0]) # プレイヤーのリストを取得
+    player_number = str(len(player_list)).zfill(2) # プレイヤーの人数(有効数字二桁0埋め)
+
 
 class ChangeHandler(FileSystemEventHandler):
-    def fileload(self):
-        global player_number
-        global world
-        global player_list
-
-        logdata = txt_open(filepath)
-        temp = current_world(logdata)
-
-        if temp is None: # 取得できないとNoneが返る
-            return
-
-        world = temp
-        player_list = player_count(logdata, world[0]) # プレイヤーのリストを取得
-        player_number = str(len(player_list)).zfill(2) # プレイヤーの人数(有効数字二桁0埋め)
-
     def __init__(self):
-        self.fileload()
+        fileload()
 
-    # ファイル変更を検知
-    def on_modified(self, event):
-        self.fileload()
+    # ファイル変更を検知 # ファイルのタイムスタンプが更新されない!!!!!!!!!!!!!!
+    #def on_modified(self, event):
+    #    self.fileload()
 
     def on_created(self, event):
         global filepath
 
-        if event.is_directory:
+        if event.is_directory: # ディレクトリだったら無視
             return
 
+        # output_log_ファイル以外だったら無視
         if "output_log_" not in os.path.basename(event.src_path):
             return
 
@@ -360,6 +361,7 @@ if __name__ == "__main__":
 
         while True:
 
+            fileload()
             send_data = refrash_send_data()
 
             send_flag = False
