@@ -13,7 +13,7 @@ moni = """
 ######################################
 #                                    #
 #   VRChat Log Monitor               #
-#                  Version 3.2.1     #
+#                  Version 3.3.1     #
 #                                    #
 #   Author : Yui-Kazeniwa            #
 #                                    #
