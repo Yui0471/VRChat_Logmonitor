@@ -15,7 +15,7 @@ moni = """
 ######################################
 #                                    #
 #   VRChat Log Monitor               #
-#                  Version 4.0.2     #
+#                  Version 4.0.3     #
 #                                    #
 #   Author : Yui-Kazeniwa            #
 #                                    #
@@ -282,7 +282,7 @@ def filter_handler(address, *args):
     #print("\n", f"{address}: {args}")
     print("\n[info] アバターの変更を検知しました")
 
-    time.sleep(1) # アバターロードが確実に終わるまで1秒待つ
+    time.sleep(5) # アバターロードが確実に終わるまで1秒待つ
     print("[info] データの更新を行っています……")
 
     send_data = refrash_send_data()
