@@ -4,14 +4,16 @@ import os
 import sys
 import time
 import glob
-import threading
 from pythonosc.udp_client import SimpleUDPClient
+from pythonosc.dispatcher import Dispatcher
+from pythonosc.osc_server import AsyncIOOSCUDPServer
+import asyncio
 
 moni = """
 ######################################
 #                                    #
 #   VRChat Log Monitor               #
-#                  Version 3.2.0     #
+#                  Version 3.2.1     #
 #                                    #
 #   Author : Yui-Kazeniwa            #
 #                                    #
@@ -22,7 +24,8 @@ moni = """
 """
 
 ip = "127.0.0.1"
-port = 9000
+send_port = 9000
+receive_port = 9001
 
 param_dict_first = {
     0:1,
@@ -241,72 +244,105 @@ def elapsed_time_str(seconds):
 
     return f"{h:02}{m:02}{s:02}"
 
-    
+
+def filter_handler(address, *args):
+    global send_data
+    #print("\n", f"{address}: {args}")
+    print("\n[info] アバターの変更を検知しました")
+
+    time.sleep(1)
+    print("[info] データの更新を行っています……")
+    for i in send_data:
+        client.send_message("/avatar/parameters/Log_Monitor", i)
+        time.sleep(0.3)
+
 
 if __name__ == "__main__":
     print(moni)
     print("[info] 準備ができたらEnterを押してください")
     input()
     print("[info] ログの監視を開始します")
-    print("[info] IP :", ip, "PORT :", port)
+    print("[info] IP :", ip, "PORT :", send_port)
     print("[info] OSC送信を開始します")
 
-    client = SimpleUDPClient(ip, port)
+    client = SimpleUDPClient(ip, send_port)
 
     filepath = logfile_detection(directory_move()) # VRChatディレクトリを探してパスを返す
 
     player_list = [] # プレイヤーリストの保存場所
     world_time_com = ["", 0] # 取得したワールド名と人数の保存場所
     OSC_send_data = [0] * 8 # 送信するOSCパラメータの保存場所
+    send_data = [0] * 8
 
-    while True:
-        logdata = txt_open(filepath)
-        world = current_world(logdata)
+    dispatcher = Dispatcher()
+    dispatcher.map("/avatar/change", filter_handler)
 
-        while world is None: # 取得できないとNoneが返るので再取得
+    async def main():
+        global send_data
+        global player_list
+        global world_time_com
+        global OSC_send_data
+
+        while True:
             logdata = txt_open(filepath)
             world = current_world(logdata)
 
-        player_list = player_count(logdata, world[0]) # プレイヤーのリストを取得
+            while world is None: # 取得できないとNoneが返るので再取得
+                logdata = txt_open(filepath)
+                world = current_world(logdata)
 
-        player_number = str(len(player_list)).zfill(2) # プレイヤーの人数(有効数字二桁0埋め)
+            player_list = player_count(logdata, world[0]) # プレイヤーのリストを取得
 
-        # 滞在時間計算部分
-        now_time = int(time.time()) # 現在時刻
-        # もし記録していたワールド名が現在のワールドと違っているか
-        # インスタンス人数が0になったら書き換える
-        if world_time_com[0] != world[1] or player_number == 0:
-            world_time_com[0] = world[1]
-            world_time_com[1] = now_time
+            player_number = str(len(player_list)).zfill(2) # プレイヤーの人数(有効数字二桁0埋め)
 
-        diff = now_time - world_time_com[1] # 差分
-        stay_time = elapsed_time_str(diff) # インスタンス滞在時間hhmmss
+            # 滞在時間計算部分
+            now_time = int(time.time()) # 現在時刻
+            # もし記録していたワールド名が現在のワールドと違っているか
+            # インスタンス人数が0になったら書き換える
+            if world_time_com[0] != world[1] or player_number == 0:
+                world_time_com[0] = world[1]
+                world_time_com[1] = now_time
 
-        send_data = [ # 取得したデータを整理して格納
-            param_dict_first[int(player_number[-2])],
-            param_dict_second[int(player_number[-1])],
-            param_dict_third[int(stay_time[-6])],
-            param_dict_fourth[int(stay_time[-5])],
-            param_dict_fifth[int(stay_time[-4])],
-            param_dict_sixth[int(stay_time[-3])],
-            param_dict_seventh[int(stay_time[-2])],
-            param_dict_eighth[int(stay_time[-1])]
-        ]
+            diff = now_time - world_time_com[1] # 差分
+            stay_time = elapsed_time_str(diff) # インスタンス滞在時間hhmmss
 
-        send_flag = False
-        for i in range(8): # 前回と比較, 違う値があった場合OSCを送信
-            if OSC_send_data[i] != send_data[i]:
-                if send_flag: # 前回送信していたら0.3秒待つ
-                    time.sleep(0.3)
-                client.send_message("/avatar/parameters/Log_Monitor", send_data[i])
-                send_flag = True
+            send_data = [ # 取得したデータを整理して格納
+                param_dict_first[int(player_number[-2])],
+                param_dict_second[int(player_number[-1])],
+                param_dict_third[int(stay_time[-6])], 
+                param_dict_fourth[int(stay_time[-5])],
+                param_dict_fifth[int(stay_time[-4])],
+                param_dict_sixth[int(stay_time[-3])],
+                param_dict_seventh[int(stay_time[-2])],
+                param_dict_eighth[int(stay_time[-1])]
+            ]
 
-        # OSCで送信したデータを保存
-        for i in range(8):
-            OSC_send_data[i] = send_data[i]
+            send_flag = False
+            for i in range(8): # 前回と比較, 違う値があった場合OSCを送信
+                if OSC_send_data[i] != send_data[i]:
+                    if send_flag: # 前回送信していたら0.3秒待つ
+                        await asyncio.sleep(0.3)
+                    client.send_message("/avatar/parameters/Log_Monitor", send_data[i])
+                    send_flag = True
 
-        print("\r[info]",world[1], "| 人数 :", player_number, "人 | 滞在時間 :",stay_time[-6:-4] + "時間" + stay_time[-4:-2] + "分" + stay_time[-2:] + "秒", "            ", end="")
+            # OSCで送信したデータを保存
+            for i in range(8):
+                OSC_send_data[i] = send_data[i]
 
-        time.sleep(1)
+            print("\r[info]",world[1], "| 人数 :", player_number, "人 | 滞在時間 :",stay_time[-6:-4] + "時間" + stay_time[-4:-2] + "分" + stay_time[-2:] + "秒", "            ", end="")
+
+            await asyncio.sleep(1)
+
+    async def init_main():
+        server = AsyncIOOSCUDPServer((ip, receive_port), dispatcher, asyncio.get_event_loop())
+        transport, protocol = await server.create_serve_endpoint()
+
+        await main()
+
+        transport.close()
+
+    asyncio.run(init_main())
+
+
 
 
