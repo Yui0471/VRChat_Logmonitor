@@ -11,7 +11,7 @@ moni = """
 ######################################
 #                                    #
 #   VRChat Log Monitor               #
-#                  Version 3.1.0     #
+#                  Version 3.2.0     #
 #                                    #
 #   Author : Yui-Kazeniwa            #
 #                                    #
@@ -241,66 +241,6 @@ def elapsed_time_str(seconds):
 
     return f"{h:02}{m:02}{s:02}"
 
-
-# インスタンスの滞在時間を送信
-def time_comparison_OSC(stay_time):
-
-    client.send_message("/avatar/parameters/Log_Monitor", param_dict_third[int(stay_time[-6])])
-    time.sleep(0.3)
-    client.send_message("/avatar/parameters/Log_Monitor", param_dict_fourth[int(stay_time[-5])])
-    time.sleep(0.3)
-    client.send_message("/avatar/parameters/Log_Monitor", param_dict_fifth[int(stay_time[-4])])
-    time.sleep(0.3)
-    client.send_message("/avatar/parameters/Log_Monitor-time", param_dict_sixth[int(stay_time[-3])])
-    time.sleep(0.3)
-    client.send_message("/avatar/parameters/Log_Monitor-time", param_dict_seventh[int(stay_time[-2])])
-    time.sleep(0.3)
-    client.send_message("/avatar/parameters/Log_Monitor-time", param_dict_eighth[int(stay_time[-1])])
-    time.sleep(0.3)
-
-    return
-
-
-# インスタンス人数を送信する
-def instance_number_OSC(player_number):
-
-    client.send_message("/avatar/parameters/Log_Monitor-instance", param_dict_first[int(player_number[-2])]) #一桁目
-    time.sleep(0.3)
-    client.send_message("/avatar/parameters/Log_Monitor-instance", param_dict_second[int(player_number[-1])]) #二桁目
-    time.sleep(0.3)
-
-    return
-
-def main(client, filepath, player_list, world_time_com):
-    logdata = txt_open(filepath)
-    world = current_world(logdata)
-
-    while world is None: # 取得できないとNoneが返るので再取得
-        logdata = txt_open(filepath)
-        world = current_world(logdata)
-
-    player_list = player_count(logdata, world[0])
-
-    player_number = str(len(player_list)).zfill(2)
-    #instance_number_OSC(player_number)
-
-    now_time = int(time.time()) # 現在時刻
-    # もし記録していたワールド名が現在のワールドと違っているか
-    # インスタンス人数が0になったら書き換える
-    if world_time_com[0] != world[1] or player_number == 0:
-        world_time_com[0] = world[1]
-        world_time_com[1] = now_time
-
-    diff = now_time - world_time_com[1] # 差分
-    stay_time = elapsed_time_str(diff)
-
-    instance_number_OSC(player_number)
-    time_comparison_OSC(stay_time)
-
-    print("\r[info]",world[1], "| 人数 :", player_number, "人 | 滞在時間 :",stay_time[-6:-4] + "時間" + stay_time[-4:-2] + "分" + stay_time[-2:] + "秒", "            ", end="")
-
-
-    #time.sleep(0.3)
     
 
 if __name__ == "__main__":
@@ -314,10 +254,65 @@ if __name__ == "__main__":
     client = SimpleUDPClient(ip, port)
 
     filepath = logfile_detection(directory_move()) # VRChatディレクトリを探してパスを返す
-    player_list = []
-    world_time_com = ["", 0]
+
+    player_list = [] # プレイヤーリストの保存場所
+    world_time_com = ["", 0] # 取得したワールド名と人数の保存場所
+    OSC_send_data = { # 送信するOSCパラメータの保存場所
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 0,
+        7: 0,
+        8: 0
+    }
 
     while True:
-        main(client, filepath, player_list, world_time_com)
+        logdata = txt_open(filepath)
+        world = current_world(logdata)
+
+        while world is None: # 取得できないとNoneが返るので再取得
+            logdata = txt_open(filepath)
+            world = current_world(logdata)
+
+        player_list = player_count(logdata, world[0]) # プレイヤーのリストを取得
+
+        player_number = str(len(player_list)).zfill(2) # プレイヤーの人数(有効数字二桁0埋め)
+
+        # 滞在時間計算部分
+        now_time = int(time.time()) # 現在時刻
+        # もし記録していたワールド名が現在のワールドと違っているか
+        # インスタンス人数が0になったら書き換える
+        if world_time_com[0] != world[1] or player_number == 0:
+            world_time_com[0] = world[1]
+            world_time_com[1] = now_time
+
+        diff = now_time - world_time_com[1] # 差分
+        stay_time = elapsed_time_str(diff) # インスタンス滞在時間hhmmss
+
+        send_data = { # 取得したデータを整理して格納
+            1: param_dict_first[int(player_number[-2])],
+            2: param_dict_second[int(player_number[-1])],
+            3: param_dict_third[int(stay_time[-6])],
+            4: param_dict_fourth[int(stay_time[-5])],
+            5: param_dict_fifth[int(stay_time[-4])],
+            6: param_dict_sixth[int(stay_time[-3])],
+            7: param_dict_seventh[int(stay_time[-2])],
+            8: param_dict_eighth[int(stay_time[-1])]
+        }
+
+        for i in range(1, 9): # 前回と比較, 違う値があった場合OSCを送信
+            if OSC_send_data[i] != send_data[i]:
+                client.send_message("/avatar/parameters/Log_Monitor", send_data[i])
+                time.sleep(0.3)
+
+        # OSCで送信したデータを保存
+        for key in OSC_send_data.keys():
+            OSC_send_data[key] = send_data[key]
+
+        print("\r[info]",world[1], "| 人数 :", player_number, "人 | 滞在時間 :",stay_time[-6:-4] + "時間" + stay_time[-4:-2] + "分" + stay_time[-2:] + "秒", "            ", end="")
+
+        # time.sleep()
 
 
