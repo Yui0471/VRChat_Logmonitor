@@ -15,7 +15,7 @@ moni = """
 ######################################
 #                                    #
 #   VRChat Log Monitor               #
-#                  Version 4.0.1     #
+#                  Version 4.0.2     #
 #                                    #
 #   Author : Yui-Kazeniwa            #
 #                                    #
@@ -24,11 +24,12 @@ moni = """
 [info] 現在のワールド、インスタンス人数をログから取得します
 [Warning!] VRChatを起動してから本スクリプトを実行してください
 """
-
+# OSC用IPとPORTをセット
 ip = "127.0.0.1"
 send_port = 9000
 receive_port = 9001
 
+# パラメータ用辞書の定義
 param_dict_first = {
     0:1,
     1:2,
@@ -144,8 +145,10 @@ def logfile_detection(directory_path):
         else:
             pass
 
-    if len(logfiles) == 0:
+    if len(logfiles) == 0: # ログファイルが見つからないと0になる
         print("[Error!] ログファイルが見つかりませんでした。VRChatを起動してから実行してください")
+        input()
+        print("[info] EnterかウインドウのXボタンで終了してください")
         sys.exit()
     
     latest = max(logfiles, key=os.path.getctime) # 最新のログファイルのパスを取得
@@ -245,6 +248,7 @@ def elapsed_time_str(seconds):
     return f"{h:02}{m:02}{s:02}"
 
 
+# OSC送信用のデータを全て取得しなおす
 def refrash_send_data():
     global stay_time
 
@@ -273,11 +277,12 @@ def refrash_send_data():
     return send_data
 
 
+# OSCでアバターが変更された場合"/avatar/change"が来ることで発火する
 def filter_handler(address, *args):
     #print("\n", f"{address}: {args}")
     print("\n[info] アバターの変更を検知しました")
 
-    time.sleep(1)
+    time.sleep(1) # アバターロードが確実に終わるまで1秒待つ
     print("[info] データの更新を行っています……")
 
     send_data = refrash_send_data()
@@ -286,6 +291,8 @@ def filter_handler(address, *args):
         client.send_message("/avatar/parameters/Log_Monitor", i)
         time.sleep(0.3)
 
+
+# ログファイルを開いてリスト型に格納する処理
 def fileload():
     global player_number
     global world
@@ -302,6 +309,7 @@ def fileload():
     player_number = str(len(player_list)).zfill(2) # プレイヤーの人数(有効数字二桁0埋め)
 
 
+# ファイル変更を検知するHandler
 class ChangeHandler(FileSystemEventHandler):
     def __init__(self):
         fileload()
@@ -310,6 +318,7 @@ class ChangeHandler(FileSystemEventHandler):
     #def on_modified(self, event):
     #    self.fileload()
 
+    # ファイル作成を検知
     def on_created(self, event):
         global filepath
 
