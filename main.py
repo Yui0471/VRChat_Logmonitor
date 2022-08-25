@@ -4,13 +4,14 @@ import os
 import sys
 import time
 import glob
+import threading
 from pythonosc.udp_client import SimpleUDPClient
 
 moni = """
 ######################################
 #                                    #
 #   VRChat Log Monitor               #
-#                  Version 3.0.2     #
+#                  Version 3.1.0     #
 #                                    #
 #   Author : Yui-Kazeniwa            #
 #                                    #
@@ -231,61 +232,75 @@ def player_count(data, world_count): # list, int, list
     # プレイヤーがインスタンスからLeftする
 
 
-# 現在のワールド名を基にインスタンスの滞在時間を計算
-def time_comparison(worldname, worldpeople):
-    now_time = int(time.time()) # 現在時刻
+# 経過時間をhhmmssで返す
+def elapsed_time_str(seconds):
+    seconds = int(seconds + 0.5)
+    h = seconds // 3600
+    m = (seconds - h * 3600) // 60
+    s = seconds - h * 3600 - m * 60
 
-    if world_time_com[0] != worldname or worldpeople == 0: # もし記録していたワールド名が現在のワールドと違っているか、インスタンス人数が0になったら書き換える
-        world_time_com[0] = worldname
+    return f"{h:02}{m:02}{s:02}"
+
+
+# インスタンスの滞在時間を送信
+def time_comparison_OSC(stay_time):
+
+    client.send_message("/avatar/parameters/Log_Monitor", param_dict_third[int(stay_time[-6])])
+    time.sleep(0.3)
+    client.send_message("/avatar/parameters/Log_Monitor", param_dict_fourth[int(stay_time[-5])])
+    time.sleep(0.3)
+    client.send_message("/avatar/parameters/Log_Monitor", param_dict_fifth[int(stay_time[-4])])
+    time.sleep(0.3)
+    client.send_message("/avatar/parameters/Log_Monitor-time", param_dict_sixth[int(stay_time[-3])])
+    time.sleep(0.3)
+    client.send_message("/avatar/parameters/Log_Monitor-time", param_dict_seventh[int(stay_time[-2])])
+    time.sleep(0.3)
+    client.send_message("/avatar/parameters/Log_Monitor-time", param_dict_eighth[int(stay_time[-1])])
+    time.sleep(0.3)
+
+    return
+
+
+# インスタンス人数を送信する
+def instance_number_OSC(player_number):
+
+    client.send_message("/avatar/parameters/Log_Monitor-instance", param_dict_first[int(player_number[-2])]) #一桁目
+    time.sleep(0.3)
+    client.send_message("/avatar/parameters/Log_Monitor-instance", param_dict_second[int(player_number[-1])]) #二桁目
+    time.sleep(0.3)
+
+    return
+
+def main(client, filepath, player_list, world_time_com):
+    logdata = txt_open(filepath)
+    world = current_world(logdata)
+
+    while world is None: # 取得できないとNoneが返るので再取得
+        logdata = txt_open(filepath)
+        world = current_world(logdata)
+
+    player_list = player_count(logdata, world[0])
+
+    player_number = str(len(player_list)).zfill(2)
+    #instance_number_OSC(player_number)
+
+    now_time = int(time.time()) # 現在時刻
+    # もし記録していたワールド名が現在のワールドと違っているか
+    # インスタンス人数が0になったら書き換える
+    if world_time_com[0] != world[1] or player_number == 0:
+        world_time_com[0] = world[1]
         world_time_com[1] = now_time
 
     diff = now_time - world_time_com[1] # 差分
+    stay_time = elapsed_time_str(diff)
 
-    hour = (diff % (3600 * 24)) // 3600 # 時間計算
-    minute = (diff % 3600) // 60
-    second = diff % 60
+    instance_number_OSC(player_number)
+    time_comparison_OSC(stay_time)
 
-    print_stay_time = ""
-    if hour != 0:
-        print_stay_time += str(hour) + "時間"
-    if minute != 0:
-        print_stay_time += str(minute) + "分"
-    if second != 0:
-        print_stay_time += str(second) + "秒"
-
-    if len(str(hour)) == 1:
-        client.send_message("/avatar/parameters/Log_Monitor", param_dict_third[0])
-        time.sleep(0.3)
-        client.send_message("/avatar/parameters/Log_Monitor", param_dict_fourth[hour])
-        time.sleep(0.3)
-    else:
-        client.send_message("/avatar/parameters/Log_Monitor", param_dict_third[(hour//10)%10])
-        time.sleep(0.3)
-        client.send_message("/avatar/parameters/Log_Monitor", param_dict_fourth[hour%10])
-        time.sleep(0.3)
-    if len(str(minute)) == 1:
-        client.send_message("/avatar/parameters/Log_Monitor", param_dict_fifth[0])
-        time.sleep(0.3)
-        client.send_message("/avatar/parameters/Log_Monitor", param_dict_sixth[minute])
-        time.sleep(0.3)
-    else:
-        client.send_message("/avatar/parameters/Log_Monitor", param_dict_fifth[(minute//10)%10])
-        time.sleep(0.3)
-        client.send_message("/avatar/parameters/Log_Monitor", param_dict_sixth[minute%10])
-        time.sleep(0.3)
-    if len(str(second)) == 1:
-        client.send_message("/avatar/parameters/Log_Monitor", param_dict_seventh[0])
-        time.sleep(0.3)
-        client.send_message("/avatar/parameters/Log_Monitor", param_dict_eighth[second])
-        time.sleep(0.3)
-    else:
-        client.send_message("/avatar/parameters/Log_Monitor", param_dict_seventh[(second//10)%10])
-        time.sleep(0.3)
-        client.send_message("/avatar/parameters/Log_Monitor", param_dict_eighth[second%10])
-        time.sleep(0.3)
+    print("\r[info]",world[1], "| 人数 :", player_number, "人 | 滞在時間 :",stay_time[-6:-4] + "時間" + stay_time[-4:-2] + "分" + stay_time[-2:] + "秒", "            ", end="")
 
 
-    return print_stay_time
+    #time.sleep(0.3)
     
 
 if __name__ == "__main__":
@@ -298,38 +313,11 @@ if __name__ == "__main__":
 
     client = SimpleUDPClient(ip, port)
 
-    filepath = logfile_detection(directory_move())
+    filepath = logfile_detection(directory_move()) # VRChatディレクトリを探してパスを返す
     player_list = []
     world_time_com = ["", 0]
 
     while True:
-        logdata = txt_open(filepath)
-        world = current_world(logdata)
+        main(client, filepath, player_list, world_time_com)
 
-        while world is None: # 取得できないとNoneが返るので再取得
-            logdata = txt_open(filepath)
-            world = current_world(logdata)
 
-        player_list = player_count(logdata, world[0])
-        player = len(player_list)
-
-        stay_time = time_comparison(world[1], player)
-
-        print("\r[info]",world[1], "| 人数 :", player, "人 | 滞在時間 :",stay_time, "            ", end="")
-
-        player_str = str(player)
-
-        # 恐らく3桁になることはないはず……。
-        if len(player_str) == 1:
-            first = player_str[-1] # 一の位
-            client.send_message("/avatar/parameters/Log_Monitor", param_dict_first[0])
-            time.sleep(0.3)
-            client.send_message("/avatar/parameters/Log_Monitor", param_dict_second[int(first)])
-        else:
-            first = player_str[-1] # 一の位
-            second = player_str[-2] # 十の位
-            client.send_message("/avatar/parameters/Log_Monitor", param_dict_first[int(second)])
-            time.sleep(0.3)
-            client.send_message("/avatar/parameters/Log_Monitor", param_dict_second[int(first)])
-
-        time.sleep(0.3)
