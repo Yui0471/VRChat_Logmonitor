@@ -11,11 +11,13 @@ Shader "Yuis_Unlit_Transparent_Cutout" {
         _MainTex ("Base (RGB) Trans (A)", 2D) = "white" {}
         _Cutoff ("Alpha cutoff", Range(0,1)) = 0.5
         _CameraRT ("Camera RenderTexture", 2D) = "white" {}
+        _Color ("Color", Color) = (1,1,1,1)
     }
 
     SubShader {
         Tags {"Queue"="Geometry+5" "IgnoreProjector"="True"
         "RenderType"="TransparentCutout"}
+        Blend SrcAlpha OneMinusSrcAlpha
         ZTest Always
         LOD 100
 
@@ -46,6 +48,7 @@ Shader "Yuis_Unlit_Transparent_Cutout" {
                 sampler2D _MainTex;
                 float4 _MainTex_ST;
                 fixed _Cutoff;
+                fixed4 _Color;
                 float4 _CameraRT_TexelSize;
 
                 bool IsNotInCamera() {
@@ -98,9 +101,10 @@ Shader "Yuis_Unlit_Transparent_Cutout" {
                 fixed4 frag (v2f i) : SV_Target
                 {
                     if(UNITY_MATRIX_P[2][2] <= 0 ) { clip(-1);}
-                    fixed4 col = tex2D(_MainTex, i.texcoord);
+                    fixed4 col = tex2D(_MainTex, i.texcoord) * _Color;
                     clip(col.a - _Cutoff);
                     UNITY_APPLY_FOG(i.fogCoord, col);
+                    col.a = _Color.a;
                     return col;
                 }
 
