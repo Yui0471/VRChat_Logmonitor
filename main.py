@@ -257,16 +257,7 @@ if __name__ == "__main__":
 
     player_list = [] # プレイヤーリストの保存場所
     world_time_com = ["", 0] # 取得したワールド名と人数の保存場所
-    OSC_send_data = { # 送信するOSCパラメータの保存場所
-        1: 0,
-        2: 0,
-        3: 0,
-        4: 0,
-        5: 0,
-        6: 0,
-        7: 0,
-        8: 0
-    }
+    OSC_send_data = [0] * 8 # 送信するOSCパラメータの保存場所
 
     while True:
         logdata = txt_open(filepath)
@@ -291,28 +282,31 @@ if __name__ == "__main__":
         diff = now_time - world_time_com[1] # 差分
         stay_time = elapsed_time_str(diff) # インスタンス滞在時間hhmmss
 
-        send_data = { # 取得したデータを整理して格納
-            1: param_dict_first[int(player_number[-2])],
-            2: param_dict_second[int(player_number[-1])],
-            3: param_dict_third[int(stay_time[-6])],
-            4: param_dict_fourth[int(stay_time[-5])],
-            5: param_dict_fifth[int(stay_time[-4])],
-            6: param_dict_sixth[int(stay_time[-3])],
-            7: param_dict_seventh[int(stay_time[-2])],
-            8: param_dict_eighth[int(stay_time[-1])]
-        }
+        send_data = [ # 取得したデータを整理して格納
+            param_dict_first[int(player_number[-2])],
+            param_dict_second[int(player_number[-1])],
+            param_dict_third[int(stay_time[-6])],
+            param_dict_fourth[int(stay_time[-5])],
+            param_dict_fifth[int(stay_time[-4])],
+            param_dict_sixth[int(stay_time[-3])],
+            param_dict_seventh[int(stay_time[-2])],
+            param_dict_eighth[int(stay_time[-1])]
+        ]
 
-        for i in range(1, 9): # 前回と比較, 違う値があった場合OSCを送信
+        send_flag = False
+        for i in range(8): # 前回と比較, 違う値があった場合OSCを送信
             if OSC_send_data[i] != send_data[i]:
+                if send_flag: # 前回送信していたら0.3秒待つ
+                    time.sleep(0.3)
                 client.send_message("/avatar/parameters/Log_Monitor", send_data[i])
-                time.sleep(0.3)
+                send_flag = True
 
         # OSCで送信したデータを保存
-        for key in OSC_send_data.keys():
-            OSC_send_data[key] = send_data[key]
+        for i in range(8):
+            OSC_send_data[i] = send_data[i]
 
         print("\r[info]",world[1], "| 人数 :", player_number, "人 | 滞在時間 :",stay_time[-6:-4] + "時間" + stay_time[-4:-2] + "分" + stay_time[-2:] + "秒", "            ", end="")
 
-        # time.sleep()
+        time.sleep(1)
 
 
