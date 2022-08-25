@@ -8,12 +8,14 @@ from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 import asyncio
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 moni = """
 ######################################
 #                                    #
 #   VRChat Log Monitor               #
-#                  Version 3.3.1     #
+#                  Version 4.0.0     #
 #                                    #
 #   Author : Yui-Kazeniwa            #
 #                                    #
@@ -160,7 +162,7 @@ def directory_move():
     
     try:
         os.chdir(directory_path)
-        print("[info] VRChatディレクトリに移動しました")
+        print("\n[info] VRChatディレクトリに移動しました")
         return directory_path
 
     except FileNotFoundError:
@@ -188,17 +190,15 @@ def txt_open(path):
 def current_world(data):
     count = 0
     worldcount = 0
-    for s in data:
+    for s in reversed(data):
         if "Entering Room:" in s:
             world = s # ついでにワールド名も取れる
-            worldcount = count # ワールドjoinのログがある行番号を記録
+            break
         count += 1 # 行番号をカウント
 
-    if worldcount == 0: # 起動したてでワールド情報がログに出力されていない場合
-        for i in range(10, -1, -1):
-            print("\r[Error!] ワールド情報が取得できませんでした。{}秒後に再取得します".format(i), end="")
-            time.sleep(1)
+    worldcount = len(data) - count -1
 
+    if worldcount == -1: # 起動したてでワールド情報がログに出力されていない場合
         return None
 
     worldname_num = world.find("Entering Room:") + 15
@@ -245,16 +245,84 @@ def elapsed_time_str(seconds):
     return f"{h:02}{m:02}{s:02}"
 
 
+def refrash_send_data():
+    global stay_time
+
+    # 滞在時間計算部分
+    now_time = int(time.time()) # 現在時刻
+    # もし記録していたワールド名が現在のワールドと違っているか
+    # インスタンス人数が0になったら書き換える
+    if world_time_com[0] != world[1] or player_number == "00":
+        world_time_com[0] = world[1]
+        world_time_com[1] = now_time
+
+    diff = now_time - world_time_com[1] # 差分
+    stay_time = elapsed_time_str(diff) # インスタンス滞在時間hhmmss
+
+    send_data = [ # 取得したデータを整理して格納
+        param_dict_first[int(player_number[-2])],
+        param_dict_second[int(player_number[-1])],
+        param_dict_third[int(stay_time[-6])], 
+        param_dict_fourth[int(stay_time[-5])],
+        param_dict_fifth[int(stay_time[-4])],
+        param_dict_sixth[int(stay_time[-3])],
+        param_dict_seventh[int(stay_time[-2])],
+        param_dict_eighth[int(stay_time[-1])]
+    ]
+
+    return send_data
+
+
 def filter_handler(address, *args):
-    global send_data
     #print("\n", f"{address}: {args}")
     print("\n[info] アバターの変更を検知しました")
 
     time.sleep(1)
     print("[info] データの更新を行っています……")
+
+    send_data = refrash_send_data()
+
     for i in send_data:
         client.send_message("/avatar/parameters/Log_Monitor", i)
         time.sleep(0.3)
+
+
+class ChangeHandler(FileSystemEventHandler):
+    def fileload(self):
+        global player_number
+        global world
+        global player_list
+
+        logdata = txt_open(filepath)
+        temp = current_world(logdata)
+
+        if temp is None: # 取得できないとNoneが返る
+            return
+
+        world = temp
+        player_list = player_count(logdata, world[0]) # プレイヤーのリストを取得
+        player_number = str(len(player_list)).zfill(2) # プレイヤーの人数(有効数字二桁0埋め)
+
+    def __init__(self):
+        self.fileload()
+
+    # ファイル変更を検知
+    def on_modified(self, event):
+        self.fileload()
+
+    def on_created(self, event):
+        global filepath
+
+        if event.is_directory:
+            return
+
+        if "output_log_" not in os.path.basename(event.src_path):
+            return
+
+        if filepath == event.src_path: # 同じパスだったら無視
+            return
+
+        filepath = logfile_detection(directory_move()) # VRChatディレクトリを探してパスを返す
 
 
 if __name__ == "__main__":
@@ -272,7 +340,11 @@ if __name__ == "__main__":
     player_list = [] # プレイヤーリストの保存場所
     world_time_com = ["", 0] # 取得したワールド名と人数の保存場所
     OSC_send_data = [0] * 8 # 送信するOSCパラメータの保存場所
-    send_data = [0] * 8
+    send_data = [0] * 8 # OSCパラメータの最新情報
+    player_number = "" # 現在のインスタンス人数
+    world = [0, ""] # ワールドjoin時の行数, ワールド名
+    player_list = [] # 同じインスタンスにいるプレイヤーのリスト
+    stay_time = "" # ワールドjoin時からの経過時間
 
     dispatcher = Dispatcher()
     dispatcher.map("/avatar/change", filter_handler)
@@ -282,40 +354,13 @@ if __name__ == "__main__":
         global player_list
         global world_time_com
         global OSC_send_data
+        global player_number
+        global world
+        global stay_time
 
         while True:
-            logdata = txt_open(filepath)
-            world = current_world(logdata)
 
-            while world is None: # 取得できないとNoneが返るので再取得
-                logdata = txt_open(filepath)
-                world = current_world(logdata)
-
-            player_list = player_count(logdata, world[0]) # プレイヤーのリストを取得
-
-            player_number = str(len(player_list)).zfill(2) # プレイヤーの人数(有効数字二桁0埋め)
-
-            # 滞在時間計算部分
-            now_time = int(time.time()) # 現在時刻
-            # もし記録していたワールド名が現在のワールドと違っているか
-            # インスタンス人数が0になったら書き換える
-            if world_time_com[0] != world[1] or player_number == 0:
-                world_time_com[0] = world[1]
-                world_time_com[1] = now_time
-
-            diff = now_time - world_time_com[1] # 差分
-            stay_time = elapsed_time_str(diff) # インスタンス滞在時間hhmmss
-
-            send_data = [ # 取得したデータを整理して格納
-                param_dict_first[int(player_number[-2])],
-                param_dict_second[int(player_number[-1])],
-                param_dict_third[int(stay_time[-6])], 
-                param_dict_fourth[int(stay_time[-5])],
-                param_dict_fifth[int(stay_time[-4])],
-                param_dict_sixth[int(stay_time[-3])],
-                param_dict_seventh[int(stay_time[-2])],
-                param_dict_eighth[int(stay_time[-1])]
-            ]
+            send_data = refrash_send_data()
 
             send_flag = False
             for i in range(8): # 前回と比較, 違う値があった場合OSCを送信
@@ -334,6 +379,11 @@ if __name__ == "__main__":
             await asyncio.sleep(1)
 
     async def init_main():
+        event_handler = ChangeHandler()
+        observer = Observer()
+        observer.schedule(event_handler, "./", recursive=False)
+        observer.start()
+
         server = AsyncIOOSCUDPServer((ip, receive_port), dispatcher, asyncio.get_event_loop())
         transport, protocol = await server.create_serve_endpoint()
 
