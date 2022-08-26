@@ -15,7 +15,7 @@ moni = """
 ######################################
 #                                    #
 #   VRChat Log Monitor               #
-#                  Version 4.0.6     #
+#                  Version 4.0.7     #
 #                                    #
 #   Author : Yui-Kazeniwa            #
 #                                    #
@@ -388,7 +388,13 @@ if __name__ == "__main__":
             for i in range(8):
                 OSC_send_data[i] = send_data[i]
 
-            print("\r[info]",world[1], "| 人数 :", player_number, "人 | 滞在時間 :",stay_time[-6:-4] + "時間" + stay_time[-4:-2] + "分" + stay_time[-2:] + "秒", "            ", end="")
+            # 表示崩れ防止のため10文字以上のワールド名は省略
+            if len(world[1]) <= 10:
+                worldname = world[1][:8] + "……"
+            else:
+                worldname = world[1]
+                
+            print("\r[info]",worldname, "| 人数 :", player_number, "人 | 滞在時間 :",stay_time[-6:-4] + "時間" + stay_time[-4:-2] + "分" + stay_time[-2:] + "秒", "            ", end="")
 
             await asyncio.sleep(1)
 
