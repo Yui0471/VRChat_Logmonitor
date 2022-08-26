@@ -237,6 +237,9 @@ def player_count(data, world_count): # list, int, list
     # 2022.08.20 16:28:02 Log        -  [Behaviour] OnPlayerLeft [PlayerName]
     # プレイヤーがインスタンスからLeftする
 
+    # 既知のバグ
+    # プレイヤー名に扱えない特殊文字があった場合リストにappendできずremove時にエラーが発生する
+
 
 # 経過時間をhhmmssで返す
 def elapsed_time_str(seconds):
