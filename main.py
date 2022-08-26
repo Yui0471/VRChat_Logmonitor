@@ -15,7 +15,7 @@ moni = """
 ######################################
 #                                    #
 #   VRChat Log Monitor               #
-#                  Version 4.0.8     #
+#                  Version 4.0.9     #
 #                                    #
 #   Author : Yui-Kazeniwa            #
 #                                    #
@@ -388,9 +388,9 @@ if __name__ == "__main__":
             for i in range(8):
                 OSC_send_data[i] = send_data[i]
 
-            # 表示崩れ防止のため10文字以上のワールド名は省略
-            if len(world[1]) >= 10:
-                worldname = world[1][:8] + "……"
+            # 表示崩れ防止のため15文字以上のワールド名は省略
+            if len(world[1]) >= 15:
+                worldname = world[1][:13] + "……"
             else:
                 worldname = world[1]
                 
