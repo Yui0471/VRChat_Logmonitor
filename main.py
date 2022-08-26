@@ -8,14 +8,14 @@ from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
 from pythonosc.osc_server import AsyncIOOSCUDPServer
 import asyncio
-from watchdog.observers import Observer
+from watchdog.observers.polling import PollingObserver as Observer
 from watchdog.events import FileSystemEventHandler
 
 moni = """
 ######################################
 #                                    #
 #   VRChat Log Monitor               #
-#                  Version 4.0.4     #
+#                  Version 4.0.5     #
 #                                    #
 #   Author : Yui-Kazeniwa            #
 #                                    #
@@ -314,9 +314,9 @@ class ChangeHandler(FileSystemEventHandler):
     def __init__(self):
         fileload()
 
-    # ファイル変更を検知 # ファイルのタイムスタンプが更新されない!!!!!!!!!!!!!!
-    #def on_modified(self, event):
-    #    self.fileload()
+    # ファイル変更を検知
+    def on_modified(self, event):
+        fileload()
 
     # ファイル作成を検知
     def on_created(self, event):
@@ -370,7 +370,7 @@ if __name__ == "__main__":
 
         while True:
 
-            fileload()
+            #fileload()
             send_data = refrash_send_data()
 
             send_flag = False
