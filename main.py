@@ -15,7 +15,7 @@ moni = """
 ######################################
 #                                    #
 #   VRChat Log Monitor               #
-#                  Version 4.0.5     #
+#                  Version 4.0.6     #
 #                                    #
 #   Author : Yui-Kazeniwa            #
 #                                    #
@@ -292,7 +292,7 @@ def filter_handler(address, *args):
 
     for i in send_data:
         client.send_message("/avatar/parameters/Log_Monitor", i)
-        time.sleep(0.3)
+        time.sleep(0.5)
 
 
 # ログファイルを開いてリスト型に格納する処理
@@ -379,8 +379,8 @@ if __name__ == "__main__":
             send_flag = False
             for i in range(8): # 前回と比較, 違う値があった場合OSCを送信
                 if OSC_send_data[i] != send_data[i]:
-                    if send_flag: # 前回送信していたら0.3秒待つ
-                        await asyncio.sleep(0.3)
+                    if send_flag: # 前回送信していたら0.5秒待つ
+                        await asyncio.sleep(0.5)
                     client.send_message("/avatar/parameters/Log_Monitor", send_data[i])
                     send_flag = True
 
