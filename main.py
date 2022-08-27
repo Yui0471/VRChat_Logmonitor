@@ -17,13 +17,16 @@ moni = """
 #   VRChat Log Monitor               #
 #                  Version 4.0.9     #
 #                                    #
-#   Author : Yui-Kazeniwa            #
-#                                    #
 ######################################
 
 [info] 現在のワールド、インスタンス人数をログから取得します
 [Warning!] VRChatを起動してから本スクリプトを実行してください
 """
+
+#   Author : Yui-Kazeniwa
+#   Support : Rounz
+#   Original plan : dk_vrc_ff
+
 # OSC用IPとPORTをセット
 ip = "127.0.0.1"
 send_port = 9000
