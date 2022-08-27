@@ -20,7 +20,7 @@ moni = """
 ######################################
 
 [info] 現在のワールド、インスタンス人数をログから取得します
-[Warning!] VRChatを起動してから本スクリプトを実行してください
+[Warning!] 本スクリプトを使用するにはSteam版VRChatが必要です
 """
 
 #   Author : Yui-Kazeniwa
@@ -343,8 +343,6 @@ class ChangeHandler(FileSystemEventHandler):
 
 if __name__ == "__main__":
     print(moni)
-    print("[info] 準備ができたらEnterを押してください")
-    input()
     print("[info] ログの監視を開始します")
     print("[info] IP :", ip, "PORT :", send_port)
     print("[info] OSC送信を開始します")
