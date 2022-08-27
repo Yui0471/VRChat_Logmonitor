@@ -1,6 +1,8 @@
 【VRChat LogMonitor to OSC】
 
-最終更新 : 2022/08/25 風庭ゆい
+最終更新 : 2022/08/27 風庭ゆい
+Support : Rounz
+OriginalPlan : デューク
 
 
 【はじめに】----------------------------
@@ -29,20 +31,24 @@ OSCでVRChatに送ることでアバターに現在のインスタンス人数�
 　ログを解析しOSC送信をするアプリケーションです。
 　VRChatを起動した後に実行します。
 
-・Log_Monitor_Setup_Beta.unitypackage
+・Log_Monitor_Setup_Beta_v_X_X_X.unitypackage
 　アバターセットアップ用のUnityPackageです。
 
 ・ReadMe.txt
 　当データの説明です。
 　セットアップ方法などが記載されています。
 
-・Log_Monitor_Texture.ai
+・texture/Log_Monitor_Texture.ai
 　テクスチャのIllustratorデータです。
+
+・texture/Yuis_Unlit_Cutout.shader
+　UIに使用しているシェーダーです。
+　カスタムUnlitシェーダーであり、汎用的なUI表示に使用できます。
 
 ・texture
 　unitypackage内で使用しているテクスチャデータです。
 
-・main.py
+・python/main.py
 　コンパイル前のPythonスクリプトです。
 　Python3系及びpython-oscが導入してあれば実行できます。
 
@@ -148,6 +154,17 @@ OSCでVRChatに送ることでアバターに現在のインスタンス人数�
 
 〇2022/08/26 【Beta v1.3.1】
 -アバター変更時やワールド移動時に表示がおかしくなる問題を修正
+
+〇2022/08/27 【Beta v2.0.0】
+-150~160cmの身長でもUIの位置が合うように座標を調整
+-OSCアプリケーションからの通信が無い時の表示を追加
+-滞在時間の更新頻度が上がりました
+-OSCアプリケーションの挙動を大幅に変更しました
+-VRChatからのOSCを監視しアバターの変更,リセット,ワールド移動を検知できるようになりました
+-VRChatを再起動しても最新のログファイルを追跡するようになりました
+-ログファイルに変更があった場合データ更新が行われるように修正
+-処理を始める際のEnter入力を削除しました
+-実装手順の一部を修正
 
 
 【開発環境】----------------------------
