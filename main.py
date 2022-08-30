@@ -283,19 +283,35 @@ def refrash_send_data():
     return send_data
 
 
-# OSCでアバターが変更された場合"/avatar/change"が来ることで発火する
+# VRChatからのOSCを受信
 def filter_handler(address, *args):
-    #print("\n", f"{address}: {args}")
-    print("\n[info] アバターの変更を検知しました")
-    print("[info] アバターのロード終了まで待っています……")
-    time.sleep(5) # アバターロードが確実に終わるまで1秒待つ
-    print("[info] データの更新を行っています……")
+    print("\n", f"{address}: {args}")
 
-    send_data = refrash_send_data()
+    # OSCでアバターが変更された場合"/avatar/change"が来ることで発火する
+    if address == "/avatar/change":
+        print("\n[info] アバターの変更を検知しました")
+        print("[info] アバターのロード終了まで待っています……")
+        time.sleep(5) # アバターロードが確実に終わるまで5秒待つ
+        print("[info] データの更新を行っています……")
 
-    for i in send_data:
-        client.send_message("/avatar/parameters/Log_Monitor", i)
-        time.sleep(0.5)
+        send_data = refrash_send_data()
+
+        for i in send_data:
+            client.send_message("/avatar/parameters/Log_Monitor", i)
+            time.sleep(0.5)
+
+    # アバターがsit判定に座ることで発火する
+    if address == "/avatar/parameters/InStation":
+        print("\n[info] InStationを検知しました")
+        time.sleep(1)
+        print("[info] データの更新を行っています……")
+
+        send_data = refrash_send_data()
+
+        for i in send_data:
+            client.send_message("/avatar/parameters/Log_Monitor", i)
+            time.sleep(0.5)
+
 
 
 # ログファイルを開いてリスト型に格納する処理
@@ -361,7 +377,7 @@ if __name__ == "__main__":
     stay_time = "" # ワールドjoin時からの経過時間
 
     dispatcher = Dispatcher()
-    dispatcher.map("/avatar/change", filter_handler)
+    dispatcher.map("/avatar/*", filter_handler)
 
     async def main():
         global send_data
