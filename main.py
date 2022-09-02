@@ -285,7 +285,7 @@ def refrash_send_data():
 
 # VRChatからのOSCを受信
 def filter_handler(address, *args):
-    print("\n", f"{address}: {args}")
+    #print("\n", f"{address}: {args}")
 
     # OSCでアバターが変更された場合"/avatar/change"が来ることで発火する
     if address == "/avatar/change":
