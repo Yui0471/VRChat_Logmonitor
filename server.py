@@ -17,8 +17,7 @@ demo = """
 [info] 開始するにはEnterを押してください
 """
 
-print(demo)
-input()
+input(demo)
 print("[info] OSC通信の監視を開始します")
 
 def print_handler(address, *args):
@@ -36,6 +35,3 @@ port = 9001
 
 server = BlockingOSCUDPServer((ip, port), dispatcher)
 server.serve_forever()
-
-
-
