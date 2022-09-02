@@ -18,8 +18,7 @@ demo = """
 [info] 開始するにはEnterを押してください
 """
 
-print(demo)
-input()
+input(demo)
 
 ip = "127.0.0.1"
 port = 9000
@@ -36,6 +35,4 @@ while parameter != 81:
 client.send_message("/avatar/parameters/Log_Monitor", 0)
 
 print("[info] 送信テストを完了しました")
-print("[info] Enterを押して終了してください")
-input()
-
+input("[info] Enterを押して終了してください")
