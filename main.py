@@ -10,12 +10,13 @@ from pythonosc.osc_server import AsyncIOOSCUDPServer
 import asyncio
 from watchdog.observers.polling import PollingObserver as Observer
 from watchdog.events import FileSystemEventHandler
+import ipaddress
 
 moni = """
 ######################################
 #                                    #
 #   VRChat Log Monitor               #
-#                  Version 4.1.0     #
+#                  Version 4.2.0     #
 #                                    #
 ######################################
 
@@ -136,6 +137,34 @@ param_dict_eighth = {
     8:79,
     9:80
 }
+
+# IPアドレスのチェック
+def ip_check(ip):
+    try:
+        ip_set = ipaddress.ip_address(ip)
+
+        if type(ip_set) is ipaddress.IPv4Address:
+            return str(ip_set)
+
+        else:
+            input("[Error!] 入力されたIPアドレスは使用できません")
+            sys.exit()
+        
+    except ValueError:
+        input("[Error!] IPアドレスに使用できない値が含まれています")
+        sys.exit()
+
+
+# ポートのチェック
+def port_check(values):
+    if values.isascii() and values.isdecimal(): # ascii文字及び数字だったらTrue
+        port = int(values)
+        if 1 <= port <= 65535:
+            return port
+
+    input("[Error!] 入力されたポート番号は使用できません")
+    sys.exit()
+
 
 # 最新のログファイルを取得
 def logfile_detection(directory_path):
@@ -359,8 +388,15 @@ class ChangeHandler(FileSystemEventHandler):
 
 if __name__ == "__main__":
     print(moni)
+
+    if [s for s in sys.argv if "--osc=" in s]:
+        osc_argv = sys.argv[1]
+        receive_port = port_check(osc_argv[6 : osc_argv.find(":")]) # 受信ポート
+        ip = ip_check(osc_argv[osc_argv.find(":") +1 : osc_argv.rfind(":")]) # 送信先IP
+        send_port = port_check(osc_argv[osc_argv.rfind(":") +1 :]) # 送信ポート
+
     print("[info] ログの監視を開始します")
-    print("[info] IP :", ip, "PORT :", send_port)
+    print("[info] 送信先IPアドレス :", ip, "送信ポート :", send_port, "受信ポート :", receive_port)
     print("[info] OSC送信を開始します")
 
     client = SimpleUDPClient(ip, send_port)
