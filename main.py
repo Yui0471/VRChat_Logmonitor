@@ -401,6 +401,11 @@ if __name__ == "__main__":
         ip = ip_check(osc_argv[osc_argv.find(":") +1 : osc_argv.rfind(":")]) # 送信先IP
         send_port = port_check(osc_argv[osc_argv.rfind(":") +1 :]) # 送信ポート
 
+        if receive_port == send_port: # ポート同士がバッティングしたら初期値に戻す
+            print("[Error!] 送信ポートと受信ポートを同じ値にすることはできません")
+            send_port = 9000
+            receive_port = 9001
+
     print("[info] ログの監視を開始します")
     print("[info] 送信先IPアドレス :", ip, "送信ポート :", send_port, "受信ポート :", receive_port)
     print("[info] OSC送信を開始します")
