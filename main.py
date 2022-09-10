@@ -16,7 +16,7 @@ moni = """
 ######################################
 #                                    #
 #   VRChat Log Monitor               #
-#                  Version 4.2.0     #
+#                  Version 4.2.1     #
 #                                    #
 ######################################
 
@@ -253,14 +253,16 @@ def player_count(data, world_count): # list, int, list
 
     for s in data: # ユーザ名だけ使うのでそれ以外は切り捨てる
         if "OnPlayerJoined " in s:
-            playername_num = s.find("OnPlayerJoined ") + 15
-            playername = s[playername_num :]
-            player.append(playername)
+            if not "Log        -  [API] " in s: # APIのログにOnPlayerJoinedが乗るため
+                playername_num = s.find("OnPlayerJoined ") + 15
+                playername = s[playername_num :]
+                player.append(playername)
         
         if "OnPlayerLeft " in s:
-            playername_num = s.find("OnPlayerLeft ") + 13
-            playername = s[playername_num :]
-            player.remove(playername)
+            if not "Log        -  [API] " in s: # 念のために対策
+                playername_num = s.find("OnPlayerLeft ") + 13
+                playername = s[playername_num :]
+                player.remove(playername)
 
     return player
 
@@ -268,6 +270,10 @@ def player_count(data, world_count): # list, int, list
     # プレイヤーがインスタンスにjoinする
     # 2022.08.20 16:28:02 Log        -  [Behaviour] OnPlayerLeft [PlayerName]
     # プレイヤーがインスタンスからLeftする
+
+    # APIのログにOnPlayerJoinedが含まれるため人数カウントが本来の値とずれる
+    # 2022.09.08 21:56:15 Log        -  [API] {{"displayName":"\u98a8\u5ead\u3086\u3044", "username":"yui-kazeniwa", "bio":"Log - STEAMVR Tracking System\u02f8 lighthouse\n\nLog - STEAMVR HMD Model\u02f8 Index\n\nLog - \uff3bBehaviour\uff3d Got best network region\u02f8 Japan\n\nLog - \uff3bBehaviour\uff3d OnConnected\n\nLog - \uff3bBehaviour\uff3d Entering world\n\nLog - \uff3bBehaviour\uff3d OnPlayerJoined Yui-Kazeniwa", "bioLinks":["https://github.com/Yui0471/", "https://wind
+
 
     # 既知のバグ
     # プレイヤー名に扱えない特殊文字があった場合リストにappendできずremove時にエラーが発生する
