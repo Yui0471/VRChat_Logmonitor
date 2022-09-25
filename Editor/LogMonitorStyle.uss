@@ -1,0 +1,40 @@
+﻿#add_button {
+    height: 40px;
+    margin: 10px;
+}
+
+#avatar_paramcost {
+    display:flex;
+    flex-direction: row;
+    background-color: gray;
+    height: 20px;
+
+    margin: 0px 10px;
+}
+
+#avatar_paramcost Box {
+    border-width: 0px;
+    height: 100%;
+
+}
+
+#avatar_paramcost_used {
+    width:0%;
+    background-color: rgb(0, 209, 0);
+}
+
+#avatar_paramcost_require {
+    width:0%;
+    background-color: rgb(0, 115, 0);
+}
+
+#avatar_paramcost_labels {
+    margin: 0px 5px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#error_helpbox {
+    margin:5px;
+}
