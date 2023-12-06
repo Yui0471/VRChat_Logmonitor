@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+>
+	<!-- ボタン作成 -->
+    <uie:ObjectField name="vrcdescriptor_objfield" label="対象アバター"/>
+    <Button name="add_button" text="追加"/>
+    
+
+    <Label name="avatar_paramcost_label1" text="使用メモリ:"/>
+    <Box name="avatar_paramcost">
+        <Box name="avatar_paramcost_used" />
+        <Box name="avatar_paramcost_require" />
+    </Box>
+    <VisualElement name="avatar_paramcost_labels">
+        <Label name="avatar_paramcost_labeluse" text=" "/>
+        <Label name="avatar_paramcost_labelfree" text=" "/>
+    </VisualElement>
+
+    <IMGUIContainer name="error_helpbox" />
+</UXML>
