@@ -16,7 +16,7 @@ moni = """
 ######################################
 #                                    #
 #   VRChat Log Monitor               #
-#                  Version 4.2.2     #
+#                  Version 4.2.3     #
 #                                    #
 ######################################
 
@@ -192,8 +192,7 @@ def logfile_detection(directory_path):
 
 # ログファイルのある場所まで移動
 def directory_move():
-    username = os.getlogin()
-    directory_path = "C:\\Users\\" + username + "\\Appdata\\LocalLow\\VRChat\\VRChat"
+    directory_path = os.path.expandvars(r"%APPDATA%\..\LocalLow\VRChat\VRChat")
     
     try:
         os.chdir(directory_path)
