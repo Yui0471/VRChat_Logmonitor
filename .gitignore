@@ -1,5 +1,7 @@
 __pycache__
+.*
+!.gitignore
 data
-.vs
 build
 dist
+*.spec
