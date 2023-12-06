@@ -1,6 +1,6 @@
 # VRChat LogMonitor to OSC
 
-VRChat起動中のログを見てリアルタイムのインスタンス人数とインスタンス滞在時間をOSCでVRChatに送るツール。
+VRChat起動中のログを監視し、リアルタイムのインスタンス人数とインスタンス滞在時間をOSCでアバターに表示するツール
 
 
 # DEMO
@@ -13,7 +13,7 @@ VRChat起動中のログを見てリアルタイムのインスタンス人数�
 # Requirement
 
 * Windows 10 以降想定
-* ※Windows以外だと多分動きません
+* ※Windows以外のシステムだとOSCアプリが動作しません
 
 
 ## Python
@@ -27,18 +27,18 @@ pip install python-osc
 
 # Development Environment
 
-* Windows 10 Home 21H1
-* Python 3.8.2
-* python-osc 1.8.0
+* Windows 10 Home 21H2
+* Python 3.11.5
+* python-osc 1.8.6
 * Visual Studio Code 1.65.2  
 
 
 # Author
 
-* 風庭ゆい
-* Support : Rounz
-* 発案 : デューク
+* 開発 : 風庭ゆい
+* サポート : Rounz
+* 企画 : デューク
 
 # License
 
-* いまのところMITlicense
+* MITlicense
